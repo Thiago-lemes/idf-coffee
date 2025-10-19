@@ -1,0 +1,30 @@
+package org.br.idf.coffee.usuario.controller
+
+import org.br.idf.coffee.usuario.dto.UsuarioRequestDTO
+import org.br.idf.coffee.usuario.service.UsuarioService
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+import java.net.URI
+
+@RestController
+@RequestMapping("/usuario")
+class UsuarioController(
+    private val usuarioService: UsuarioService
+) {
+
+    @PostMapping("/register")
+    fun register( @RequestBody request: UsuarioRequestDTO): ResponseEntity<Any> {
+        return try {
+            val created = usuarioService.register(request)
+            val location = URI.create("/usuario/${created.id}")
+            ResponseEntity.created(location).body(created)
+        } catch (ex: IllegalStateException) {
+            ResponseEntity.badRequest().body(mapOf("error" to (ex.message ?: "Email já cadastrado")))
+        } catch (ex: Exception) {
+            ResponseEntity.status(500).body(mapOf("error" to "Internal server error"))
+        }
+    }
+}

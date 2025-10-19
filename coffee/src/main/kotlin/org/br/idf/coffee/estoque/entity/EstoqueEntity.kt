@@ -1,7 +1,7 @@
 package org.br.idf.coffee.estoque.entity
 
 import jakarta.persistence.*
-import org.br.idf.coffee.caixa.entity.TipoMovimentacaoEnum
+import org.br.idf.coffee.fluxo_caixa.entity.TipoMovimentacaoEnum
 import org.br.idf.coffee.produto.entity.ProdutoEntity
 import java.time.LocalDateTime
 
