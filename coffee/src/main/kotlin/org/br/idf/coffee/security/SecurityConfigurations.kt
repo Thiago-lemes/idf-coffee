@@ -55,6 +55,8 @@ class SecurityConfigurations(
             .authorizeHttpRequests {
                 it.requestMatchers("/auth/**").permitAll()
                 it.requestMatchers("/usuario/**").permitAll()
+                it.requestMatchers("/categoria/**").permitAll()
+
                 if (isDev) it.requestMatchers("/h2-console/**").permitAll()
 
                 it.anyRequest().authenticated()
