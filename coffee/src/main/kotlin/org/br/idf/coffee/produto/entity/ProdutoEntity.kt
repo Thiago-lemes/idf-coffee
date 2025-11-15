@@ -1,6 +1,7 @@
 package org.br.idf.coffee.produto.entity
 
 import jakarta.persistence.*
+import org.br.idf.coffee.categoria.entity.CategoriaEntity
 import java.math.BigDecimal
 
 @Entity
@@ -8,6 +9,7 @@ import java.math.BigDecimal
 data class ProdutoEntity(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
+
     @Column(name = "nome", nullable = false)
     val nome: String,
 
@@ -17,8 +19,9 @@ data class ProdutoEntity(
     @Column(name = "preco", nullable = false)
     val preco: BigDecimal,
 
-    @Column(name = "categoria")
-    val categoria: CategoriaEnum? = null,
+    @ManyToOne
+    @JoinColumn(name = "categoria_id")
+    val categoria: CategoriaEntity,
 
     @Column(name = "quantidade_estoque")
     var quantidadeEstoque: Int = 0,

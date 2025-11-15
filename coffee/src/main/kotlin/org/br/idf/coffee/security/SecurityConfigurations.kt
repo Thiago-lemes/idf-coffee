@@ -56,6 +56,14 @@ class SecurityConfigurations(
                 it.requestMatchers("/auth/**").permitAll()
                 it.requestMatchers("/usuario/**").permitAll()
                 it.requestMatchers("/categoria/**").permitAll()
+                it.requestMatchers("/produto/**").permitAll()
+                it.requestMatchers("/caixa/**").permitAll()
+                it.requestMatchers("/transacao/**").permitAll()
+                it.requestMatchers(
+                    "/v3/api-docs/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html"
+                ).permitAll()
 
                 if (isDev) it.requestMatchers("/h2-console/**").permitAll()
 
