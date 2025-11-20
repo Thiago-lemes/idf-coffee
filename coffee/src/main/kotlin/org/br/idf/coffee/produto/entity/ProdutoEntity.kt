@@ -6,26 +6,26 @@ import java.math.BigDecimal
 
 @Entity
 @Table(name = "produto")
-data class ProdutoEntity(
+class ProdutoEntity(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    var id: Long = 0,
 
     @Column(name = "nome", nullable = false)
-    val nome: String,
+    var nome: String,
 
     @Column(name = "descricao")
-    val descricao: String? = null,
+    var descricao: String? = null,
 
     @Column(name = "preco", nullable = false)
-    val preco: BigDecimal,
+    var preco: BigDecimal,
 
     @ManyToOne
     @JoinColumn(name = "categoria_id")
-    val categoria: CategoriaEntity,
+    var categoria: CategoriaEntity,
 
     @Column(name = "quantidade_estoque")
     var quantidadeEstoque: Int = 0,
 
     @Column(name = "ativo")
-    val ativo: Boolean = true,
+    var ativo: Boolean = true,
 )

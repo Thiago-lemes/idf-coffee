@@ -31,12 +31,10 @@ class CategoriaService(
     }
 
     fun update(dto: CategoriaDTO, id: Long): CategoriaDTO? {
-        val existingCategoria = repository.findById(id).orElse(null)
+        val categoria = repository.findById(id).orElse(null)
         findByNome(dto.nome)
-        val updatedCategoria = existingCategoria.copy(
-            nome = dto.nome
-        )
-        val savedCategoria = repository.save(updatedCategoria)
+        categoria.nome = dto.nome
+        val savedCategoria = repository.saveAndFlush(categoria)
         return CategoriaDTO.fromEntity(savedCategoria)
     }
 

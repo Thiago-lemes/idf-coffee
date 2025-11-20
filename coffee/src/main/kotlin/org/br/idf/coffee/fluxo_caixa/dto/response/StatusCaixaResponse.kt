@@ -1,11 +1,13 @@
 package org.br.idf.coffee.fluxo_caixa.dto.response
 
-import org.br.idf.coffee.fluxo_caixa.entity.FluxoCaixaEntity
+import org.br.idf.coffee.fluxo_caixa.entity.CaixaRegistradoraEntity
 import java.math.BigDecimal
 
 data class StatusCaixaResponse(
     val valorDinheiro: BigDecimal,
-    val valorCartao: BigDecimal,
+    val debito: BigDecimal,
+    val credito: BigDecimal,
+    val pix: BigDecimal,
     val valorTotal: BigDecimal,
     val valorInicial: BigDecimal,
     val sangria: BigDecimal,
@@ -14,18 +16,21 @@ data class StatusCaixaResponse(
 ) {
     companion object {
         fun fromEntity(
-            caixa: FluxoCaixaEntity,
-            total: BigDecimal,
+            caixa: CaixaRegistradoraEntity,
+            totalVendas: BigDecimal,
+            totalDinheiroNoCaixa: BigDecimal,
             ultimas: List<TransacaoResumoDto> = emptyList()
         ): StatusCaixaResponse {
             return StatusCaixaResponse(
-                valorDinheiro = caixa.valorDinheiro,
-                valorCartao = caixa.valorCartao,
-                valorTotal = total,
+                valorDinheiro = caixa.totalDinheiro,
+                debito = caixa.totalDebito,
+                valorTotal = totalVendas,
                 valorInicial = caixa.valorInicial,
                 sangria = caixa.sangria,
                 caixaOpen = caixa.caixaAberto,
-                ultimasTransacoes = ultimas
+                ultimasTransacoes = ultimas,
+                credito = caixa.totalCredito,
+                pix = caixa.totalPix
             )
         }
     }

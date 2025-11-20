@@ -13,21 +13,21 @@ import java.math.BigDecimal
 
 @Entity
 @Table(name = "transacao_item")
-data class TransacaoItemEntity(
+class TransacaoItemEntity(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    var id: Long = 0,
 
     @Column(name = "quantidade", nullable = false)
-    val quantidade: Int,
+    var quantidade: Int,
 
     @Column(name = "valor_unitario", nullable = false)
-    val valorUnitario: BigDecimal,
+    var valorUnitario: BigDecimal,
 
     @Column(name = "valor_total", nullable = false)
-    val valorTotal: BigDecimal,
+    var valorTotal: BigDecimal,
 
     @ManyToOne @JoinColumn(name = "produto_id")
-    val produto: ProdutoEntity,
+    var produto: ProdutoEntity,
 
     @ManyToOne @JoinColumn(name = "transacao_id")
     var transacao: TransacaoEntity? = null

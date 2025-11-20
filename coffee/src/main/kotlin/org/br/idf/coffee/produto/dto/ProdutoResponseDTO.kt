@@ -7,7 +7,7 @@ data class ProdutoResponseDTO(
     val nome: String,
     val descricao: String?,
     val preco: String,
-    val categoria: Long,
+    val categoria: String,
     val estoque: Int
 ){
     companion object {
@@ -18,7 +18,7 @@ data class ProdutoResponseDTO(
                 descricao = produto.descricao,
                 preco = produto.preco.toString(),
                 estoque = produto.quantidadeEstoque,
-                categoria = produto.categoria.id
+                categoria = produto.categoria.nome
             )
         }
     }

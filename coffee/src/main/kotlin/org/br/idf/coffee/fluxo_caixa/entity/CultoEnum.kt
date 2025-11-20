@@ -9,6 +9,6 @@ enum class CultoEnum {
     BRAVES,
     CASAIS,
     MULHERES,
-    HOMENES,
+    HOMENS,
     OUTROS
 }

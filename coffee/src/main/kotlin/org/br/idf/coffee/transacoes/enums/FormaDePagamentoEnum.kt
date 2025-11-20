@@ -1,4 +1,4 @@
-package org.br.idf.coffee.vendas.entity.enums
+package org.br.idf.coffee.transacoes.enums
 
 enum class FormaDePagamentoEnum {
     DINHEIRO,

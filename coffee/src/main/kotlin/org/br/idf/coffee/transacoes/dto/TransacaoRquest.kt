@@ -1,6 +1,6 @@
 package org.br.idf.coffee.transacoes.dto
 
-import org.br.idf.coffee.vendas.entity.enums.FormaDePagamentoEnum
+import org.br.idf.coffee.transacoes.enums.FormaDePagamentoEnum
 import java.math.BigDecimal
 
 data class TransacaoRquest(

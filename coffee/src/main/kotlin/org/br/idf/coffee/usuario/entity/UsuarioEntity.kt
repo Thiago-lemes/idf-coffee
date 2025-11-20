@@ -6,25 +6,25 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(name = "usuario")
-data class UsuarioEntity(
+class UsuarioEntity(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    var id: Long = 0,
 
     @Column(name = "nome", nullable = false)
-    val nome: String,
+    var nome: String,
 
     @Column(name = "email", unique = true, nullable = false)
-    val email: String,
+    var email: String,
 
     @Column(name = "senha", nullable = false)
-    val senha: String,
+    var senha: String,
 
     @Enumerated(EnumType.STRING)
-    val role: Roles = Roles.USUARIO,
+    var role: Roles = Roles.USUARIO,
 
     @Column(name = "ativo")
-    val ativo: Boolean = true,
+    var ativo: Boolean = true,
 
     @Column(name = "criado_em")
-    val criadoEm: LocalDateTime = LocalDateTime.now()
+    var criadoEm: LocalDateTime = LocalDateTime.now()
 )

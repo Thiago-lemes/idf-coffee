@@ -5,14 +5,19 @@ import org.br.idf.coffee.produto.dto.ProdutoRequestDTO
 import org.br.idf.coffee.produto.dto.ProdutoResponseDTO
 import org.br.idf.coffee.produto.repository.ProdutoRepository
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import java.math.BigDecimal
+import java.util.Locale
 
 @Service
+@Transactional
 class ProdutoService(private val repository: ProdutoRepository,
                      private val categoriaRepository: CategoriaRepository) {
 
     fun registrarProduto(dto: ProdutoRequestDTO): ProdutoResponseDTO {
         validateProdutoForCreate(dto)
-        val categoria = categoriaRepository.findById(dto.categoriaId).orElseThrow { NoSuchElementException("Categoria com id=${dto.categoriaId} não encontrada") }
+        val categoria = categoriaRepository.findById(dto.categoriaId)
+            .orElseThrow { NoSuchElementException("Categoria com id=${dto.categoriaId} não encontrada") }
         val novoProduto = repository.save(dto.toEntity(categoria))
         return ProdutoResponseDTO.fromEntity(novoProduto)
     }
@@ -27,11 +32,21 @@ class ProdutoService(private val repository: ProdutoRepository,
             .orElse(null)
 
     fun update(id: Long, dto: ProdutoRequestDTO): ProdutoResponseDTO {
-        val existing = repository.findById(id).orElseThrow { NoSuchElementException("Produto com id=$id não encontrado") }
+        val produtoEntity = repository.findById(id).orElseThrow { NoSuchElementException("Produto com id=$id não encontrado") }
         validateProdutoForUpdate(id, dto)
-        val categoria = categoriaRepository.findById(dto.categoriaId).orElseThrow { NoSuchElementException("Categoria com id=${dto.categoriaId} não encontrada") }
-        val updated = existing.copy(nome = dto.nome, descricao = dto.descricao, preco = dto.preco, categoria = categoria)
-        val saved = repository.save(updated)
+        var categoriaEntity = categoriaRepository.findById(dto.categoriaId)
+            .orElseThrow { NoSuchElementException("Categoria com id=${dto.categoriaId} não encontrada") }
+
+        val updated = produtoEntity.apply {
+            this.nome = dto.nome.uppercase(Locale.getDefault())
+            this.descricao = dto.descricao
+            this.preco = dto.preco
+            this.quantidadeEstoque = dto.estoque
+            this.categoria = categoriaEntity
+        }
+
+        val saved = repository.saveAndFlush(updated)
+
         return ProdutoResponseDTO.fromEntity(saved)
     }
 
@@ -40,25 +55,25 @@ class ProdutoService(private val repository: ProdutoRepository,
             throw NoSuchElementException("Produto com id=$id não encontrado")
         }
         repository.deleteById(id)
+        repository.flush();
     }
 
     private fun validateProdutoForCreate(dto: ProdutoRequestDTO) {
         validateCommonFields(dto)
-        require (repository.findByNome(dto.nome).isPresent) {
-            throw IllegalArgumentException("Produto Já cadastrado: ${dto.nome}")
-        }
+        // Se já existir produto com mesmo nome, lança erro
+        val nomeNorm = dto.nome.uppercase(Locale.getDefault())
+        require(!repository.findByNome(nomeNorm).isPresent) { "Produto já cadastrado: ${dto.nome}" }
     }
 
     private fun validateProdutoForUpdate(id: Long, dto: ProdutoRequestDTO) {
         validateCommonFields(dto)
-        val byName = repository.findByNome(dto.nome)
-        require (byName.isPresent && byName.get().id != id) {
-            throw IllegalArgumentException("Outro produto com o mesmo nome já existe: ${dto.nome}")
-        }
+        val nomeNorm = dto.nome.uppercase(Locale.getDefault())
+        val byName = repository.findByNome(nomeNorm)
+        require(!(byName.isPresent && byName.get().id != id)) { "Outro produto com o mesmo nome já existe: ${dto.nome}" }
     }
 
     private fun validateCommonFields(dto: ProdutoRequestDTO) {
-        require (dto.nome.isBlank()) ; throw IllegalArgumentException("Nome do produto não pode ser vazio")
-        if (dto.preco < 1.toBigDecimal()) ; throw IllegalArgumentException("Preço do produto deve ser maior que zero")
+        require(!(dto.nome.isBlank())) { "Nome do produto não pode ser vazio" }
+        require(dto.preco >= BigDecimal.ONE) { "Preço do produto deve ser maior que zero" }
     }
 }

@@ -28,9 +28,9 @@ class UsuarioService(
     fun register(dto: UsuarioRequestDTO): UsuarioResponseDTO {
         check(!usuarioRepository.findByEmail(dto.email).isPresent) { "Email já cadastrado" }
 
-        val usuarioAtualizado: UsuarioEntity = dto.toEntity().copy(
-            senha = passwordHashService.hash(dto.senha)
-        )
+        val usuarioAtualizado: UsuarioEntity = dto.toEntity().apply {
+            this.senha = passwordHashService.hash(dto.senha)
+        }
         return UsuarioResponseDTO.fromEntity(usuarioRepository.save(usuarioAtualizado))
     }
 
