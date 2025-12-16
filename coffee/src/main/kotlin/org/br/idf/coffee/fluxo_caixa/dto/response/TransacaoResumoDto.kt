@@ -6,16 +6,16 @@ import java.time.LocalDateTime
 
 data class TransacaoResumoDto(
     val id: Long,
-    val dataVenda: LocalDateTime,
-    val valorTotal: BigDecimal,
-    val formaPagamento: String
+    val time: LocalDateTime,
+    val amount: BigDecimal,
+    val method: String
 ) {
     companion object {
         fun fromEntity(entity: TransacaoEntity): TransacaoResumoDto = TransacaoResumoDto(
             id = entity.id,
-            dataVenda = entity.dataVenda,
-            valorTotal = entity.valorTotal,
-            formaPagamento = entity.formaPagamento.name
+            time = entity.dataVenda,
+            amount = entity.valorTotal,
+            method = entity.formaPagamento.name
         )
     }
 }

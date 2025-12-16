@@ -13,7 +13,8 @@ import org.br.idf.coffee.usuario.repository.UsuarioRepository
 @Component
 class SecurityFilter(
     private val tokenService: TokenService,
-    private val userRepository: UsuarioRepository
+    private val userRepository: UsuarioRepository,
+    private val tokenBlacklistService: TokenBlacklistService
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
@@ -23,6 +24,12 @@ class SecurityFilter(
     ) {
         val token = recuperarToken(request)
         token?.let {
+            // check blacklist first
+            if (tokenBlacklistService.isBlacklisted(it)) {
+                filterChain.doFilter(request, response)
+                return
+            }
+
             val login = tokenService.validateToken(it)
             if (login.isBlank()) {
                 filterChain.doFilter(request, response)

@@ -17,14 +17,8 @@ class UsuarioController(
 
     @PostMapping("/register")
     fun register( @RequestBody request: UsuarioRequestDTO): ResponseEntity<Any> {
-        return try {
-            val created = usuarioService.register(request)
-            val location = URI.create("/usuario/${created.id}")
-            ResponseEntity.created(location).body(created)
-        } catch (ex: IllegalStateException) {
-            ResponseEntity.badRequest().body(mapOf("error" to (ex.message ?: "Email já cadastrado")))
-        } catch (ex: Exception) {
-            ResponseEntity.status(500).body(mapOf("error" to "Internal server error"))
-        }
+        val created = usuarioService.register(request)
+        val location = URI.create("/usuario/${created.id}")
+        return ResponseEntity.created(location).body(created)
     }
 }

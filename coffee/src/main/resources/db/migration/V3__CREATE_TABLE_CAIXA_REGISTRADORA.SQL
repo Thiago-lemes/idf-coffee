@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS caixa_registradora(
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     data_culto TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     valor_final_por_culto DECIMAL(10,2) NOT NULL,
+    saldo_final_conferido_pelo_voluntario DECIMAL(10,2) NOT NULL,
     valor_fechamento_caixa DECIMAL(10,2) NOT NULL,
     valor_inicial DECIMAL(10,2) NOT NULL,
     total_em_debito DECIMAL(10,2) NOT NULL,

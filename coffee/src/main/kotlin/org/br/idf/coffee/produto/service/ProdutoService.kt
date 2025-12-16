@@ -40,7 +40,7 @@ class ProdutoService(private val repository: ProdutoRepository,
         val updated = produtoEntity.apply {
             this.nome = dto.nome.uppercase(Locale.getDefault())
             this.descricao = dto.descricao
-            this.preco = dto.preco
+            this.precoVenda = dto.preco
             this.quantidadeEstoque = dto.estoque
             this.categoria = categoriaEntity
         }
@@ -61,8 +61,8 @@ class ProdutoService(private val repository: ProdutoRepository,
     private fun validateProdutoForCreate(dto: ProdutoRequestDTO) {
         validateCommonFields(dto)
         // Se já existir produto com mesmo nome, lança erro
-        val nomeNorm = dto.nome.uppercase(Locale.getDefault())
-        require(!repository.findByNome(nomeNorm).isPresent) { "Produto já cadastrado: ${dto.nome}" }
+        val nomeProduto = dto.nome.uppercase(Locale.getDefault())
+        require(!repository.findByNome(nomeProduto).isPresent) { "Produto já cadastrado: ${dto.nome}" }
     }
 
     private fun validateProdutoForUpdate(id: Long, dto: ProdutoRequestDTO) {

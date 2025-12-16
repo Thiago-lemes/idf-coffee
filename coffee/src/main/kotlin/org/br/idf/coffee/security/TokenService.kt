@@ -44,6 +44,16 @@ class TokenService(
         }
     }
 
+    fun getExpirationInstant(token: String): Instant? {
+        return try {
+            val algorithm = Algorithm.HMAC256(secret)
+            val decoded = JWT.require(algorithm).withIssuer("IDF").build().verify(token)
+            decoded.expiresAt?.toInstant()
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     private fun genExpirationDate(): Instant =
         LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"))
 }

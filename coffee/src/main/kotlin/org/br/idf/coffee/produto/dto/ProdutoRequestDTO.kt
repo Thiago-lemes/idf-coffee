@@ -11,13 +11,17 @@ data class ProdutoRequestDTO(
     val preco: BigDecimal,
     val categoriaId: Long,
     var estoque: Int = 0,
+    var precoCusto: BigDecimal,
+    val icone: String? = null
 ){
     fun toEntity(categoria: CategoriaEntity) = ProdutoEntity(
         nome = nome.uppercase(Locale.getDefault()),
         descricao = descricao,
-        preco = preco,
+        precoVenda = preco,
         categoria = categoria,
         quantidadeEstoque = estoque,
         ativo = true,
+        icone = icone,
+        precoCusto = precoCusto
     )
 }
