@@ -16,6 +16,16 @@ spring:
     enabled: true
     baseline-on-migrate: true
     locations: classpath:db/migration
+  rabbitmq:
+    host: ${RABBIT_HOST:localhost}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USER:guest}
+    password: ${RABBIT_PASSWORD:guest}
+
+rabbitmq:
+  exchange: coffee.exchange
+  queue: fechamento.caixa.queue
+  routing-key: fechamento.caixa
 
 ## Optional: expose H2 console only for dev-h2 profile (kept here but not used in mysql profile)
 #spring:
@@ -23,4 +33,3 @@ spring:
 #    console:
 #      enabled: false
 #      path: /h2-console
-

@@ -47,13 +47,6 @@ class TransacaoService(
         return transcaoFinal
     }
 
-
-//    fun buscarUltimasTransacoes(limit: Int = 5): List<TransacaoEntity> {
-//        require(limit > 0) { "Limit deve ser maior que zero." }
-//        val pageRequest = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "dataVenda"))
-//        return transacaoRepository.findAll(pageRequest).content
-//    }
-
     fun buscarUltimasTransacoes(caixaId: Long, limit: Int = 5): List<TransacaoEntity> {
         require(limit > 0) { "Limit deve ser maior que zero." }
 
@@ -68,7 +61,6 @@ class TransacaoService(
             .content
     }
 
-
     private fun carregarProdutos(dto: TransacaoRquest): Map<Long, ProdutoEntity> {
         val ids = dto.items
             .map { it.id }
@@ -80,12 +72,11 @@ class TransacaoService(
 
         val produtos = produtoRepository.findAllById(ids).toList()
         val produtosMap = produtos.associateBy { it.id }
-
         val missingIds = ids.filterNot(produtosMap::containsKey)
+
         require(missingIds.isEmpty()) {
             "Produtos não encontrados: ${missingIds.joinToString(", ")}"
         }
-
         return produtosMap
     }
 

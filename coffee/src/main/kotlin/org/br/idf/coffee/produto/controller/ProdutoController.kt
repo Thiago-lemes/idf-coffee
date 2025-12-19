@@ -1,7 +1,7 @@
 package org.br.idf.coffee.produto.controller
 
-import org.br.idf.coffee.produto.dto.ProdutoRequestDTO
-import org.br.idf.coffee.produto.dto.ProdutoResponseDTO
+import org.br.idf.coffee.produto.dto.ProdutoRequest
+import org.br.idf.coffee.produto.dto.ProdutoResponse
 import org.br.idf.coffee.produto.service.ProdutoService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -12,7 +12,7 @@ class ProdutoController(
     private val service: ProdutoService
 ) {
     @PostMapping()
-    fun create(@RequestBody dto: ProdutoRequestDTO): ResponseEntity<Any> {
+    fun create(@RequestBody dto: ProdutoRequest): ResponseEntity<Any> {
         return try {
             val created = service.registrarProduto(dto)
             ResponseEntity.status(201).body(created)
@@ -22,11 +22,11 @@ class ProdutoController(
     }
 
     @GetMapping
-    fun getAll(): ResponseEntity<List<ProdutoResponseDTO>> =
+    fun getAll(): ResponseEntity<List<ProdutoResponse>> =
         ResponseEntity.ok(service.findAll())
 
     @GetMapping("/{id}")
-    fun getById(@PathVariable id: Long): ResponseEntity<ProdutoResponseDTO> {
+    fun getById(@PathVariable id: Long): ResponseEntity<ProdutoResponse> {
         val categoria = service.findById(id)
             ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(categoria)
@@ -39,7 +39,7 @@ class ProdutoController(
     }
 
     @PutMapping("/{id}")
-    fun update(@PathVariable id: Long, @RequestBody dto: ProdutoRequestDTO): ResponseEntity<Any> {
+    fun update(@PathVariable id: Long, @RequestBody dto: ProdutoRequest): ResponseEntity<Any> {
         return try {
             val updated = service.update(id, dto)
             ResponseEntity.status(201).body(updated)

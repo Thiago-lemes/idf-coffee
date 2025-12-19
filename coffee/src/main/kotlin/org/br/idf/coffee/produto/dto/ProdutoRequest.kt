@@ -1,18 +1,20 @@
 package org.br.idf.coffee.produto.dto
 
-import org.br.idf.coffee.produto.entity.ProdutoEntity
 import org.br.idf.coffee.categoria.entity.CategoriaEntity
+import org.br.idf.coffee.produto.entity.ProdutoEntity
 import java.math.BigDecimal
 import java.util.*
 
-data class ProdutoRequestDTO(
+data class ProdutoRequest(
     val nome: String,
     val descricao: String? = null,
     val preco: BigDecimal,
     val categoriaId: Long,
     var estoque: Int = 0,
     var precoCusto: BigDecimal,
-    val icone: String? = null
+    val icone: String? = null,
+    val insumo: Long? = null,
+    val quantiaInsumoPorProduto: BigDecimal? = null
 ){
     fun toEntity(categoria: CategoriaEntity) = ProdutoEntity(
         nome = nome.uppercase(Locale.getDefault()),
