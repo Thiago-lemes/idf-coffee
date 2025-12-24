@@ -1,6 +1,7 @@
 package org.br.idf.coffee.insumo.entity
 
 import jakarta.persistence.*
+import org.br.idf.coffee.estoque.entity.EstoqueInsumoEntity
 
 @Entity
 @Table(name = "insumo")
@@ -19,6 +20,9 @@ class InsumoEntity(
     var descricao: String? = null,
 
     @Column(name = "ativo")
-    var ativo: Boolean = true
+    var ativo: Boolean = true,
+
+    @OneToOne(mappedBy = "insumo", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    var estoque: EstoqueInsumoEntity? = null
 )
 

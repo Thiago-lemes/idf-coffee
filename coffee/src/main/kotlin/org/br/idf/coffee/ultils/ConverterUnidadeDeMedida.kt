@@ -13,9 +13,9 @@ class ConversorUnidadeMedida {
     ): BigDecimal =
         when (unidade) {
             UnidadeMedida.KG -> quantidade.multiply(BigDecimal("1000")) // kg → g
-            UnidadeMedida.G  -> quantidade
+            UnidadeMedida.g  -> quantidade
             UnidadeMedida.L  -> quantidade.multiply(BigDecimal("1000")) // l → ml
-            UnidadeMedida.ML -> quantidade
+            UnidadeMedida.mL -> quantidade
             UnidadeMedida.UN -> quantidade
         }
 }

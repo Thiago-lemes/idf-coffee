@@ -1,14 +1,14 @@
 package org.br.idf.coffee.insumo.entity
 
 enum class UnidadeMedida {
-    UN, G, KG, ML, L;
+    UN, g, KG, mL, L;
 
     fun unidadeBase(): UnidadeMedida = when {
-        isPeso() -> G
-        isVolume() -> ML
+        isPeso() -> g
+        isVolume() -> mL
         else -> UN
     }
 
-    fun isPeso() = this == G || this == KG
-    fun isVolume() = this == ML || this == L
+    fun isPeso() = this == g || this == KG
+    fun isVolume() = this == mL || this == L
 }

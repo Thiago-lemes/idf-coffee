@@ -10,8 +10,8 @@ class EstoqueInsumoEntity(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0,
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "insumo_id", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "insumo_id", nullable = false, unique = true)
     var insumo: InsumoEntity,
 
     // Sempre armazenado na unidade base (g, ml ou un)

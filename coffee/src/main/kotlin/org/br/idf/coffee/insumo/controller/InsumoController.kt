@@ -5,12 +5,7 @@ import org.br.idf.coffee.insumo.dto.InsumoResponse
 import org.br.idf.coffee.insumo.service.InsumoService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.ExceptionHandler
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/insumos")
@@ -23,6 +18,9 @@ class InsumoController(
         return ResponseEntity.status(HttpStatus.CREATED).body(insumo)
     }
 
+    @GetMapping
+    fun getAll(): ResponseEntity<List<InsumoResponse>> =
+        ResponseEntity.ok(service.findAll())
 
     @RestControllerAdvice
     class GlobalExceptionHandler {
