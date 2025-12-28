@@ -2,6 +2,7 @@ package org.br.idf.coffee.produto.service
 
 import org.br.idf.coffee.categoria.repository.CategoriaRepository
 import org.br.idf.coffee.insumo.repository.InsumoRepository
+import org.br.idf.coffee.produto.dto.ProdutoInsumoRequest
 import org.br.idf.coffee.produto.dto.ProdutoRequest
 import org.br.idf.coffee.produto.dto.ProdutoResponse
 import org.br.idf.coffee.produto.entity.ProdutoEntity
@@ -24,15 +25,48 @@ class ProdutoService(
 
     fun registrarProduto(request: ProdutoRequest): ProdutoResponse {
         validateProdutoForCreate(request)
-        val categoria = categoriaRepository.findById(request.categoriaId)
-            .orElseThrow { NoSuchElementException("Categoria com id=${request.categoriaId} não encontrada") }
-        val novoProduto = repository.save(request.toEntity(categoria))
 
-        if (request.insumo != null && request.quantiaInsumoPorProduto != null) {
-            vinculaProdutoAInsumo(novoProduto, request.insumo, request.quantiaInsumoPorProduto)
+        val categoria = categoriaRepository.findById(request.categoriaId)
+            .orElseThrow { NoSuchElementException("Categoria ${request.categoriaId} não encontrada") }
+
+        val produto = repository.save(request.toEntity(categoria))
+
+        salvarInsumosDoProduto(produto, request.insumos)
+
+        produto.precoCusto = calcularPrecoCusto(produto, request.insumos)
+        repository.save(produto)
+
+        return ProdutoResponse.fromEntity(produto)
+    }
+
+    fun update(id: Long, request: ProdutoRequest): ProdutoResponse {
+        validateProdutoForUpdate(id, request)
+
+        val produto = repository.findById(id)
+            .orElseThrow { NoSuchElementException("Produto $id não encontrado") }
+
+        val categoria = categoriaRepository.findById(request.categoriaId)
+            .orElseThrow { NoSuchElementException("Categoria ${request.categoriaId} não encontrada") }
+
+        produto.apply {
+            nome = request.nome.uppercase(Locale.getDefault())
+            descricao = request.descricao
+            precoVenda = request.preco
+            custoAquisicao = request.custoAquisicao
+            quantidadeEstoque = request.estoque
+            this.categoria = categoria
+            icone = request.icone
         }
 
-        return ProdutoResponse.fromEntity(novoProduto)
+        repository.save(produto)
+
+        produtoInsumoRepository.deleteByProdutoId(produto.id)
+        salvarInsumosDoProduto(produto, request.insumos)
+
+        produto.precoCusto = calcularPrecoCusto(produto, request.insumos)
+        repository.save(produto)
+
+        return ProdutoResponse.fromEntity(produto)
     }
 
     fun findAll(): List<ProdutoResponse> =
@@ -44,29 +78,6 @@ class ProdutoService(
             .map(ProdutoResponse::fromEntity)
             .orElse(null)
 
-    fun update(id: Long, request: ProdutoRequest): ProdutoResponse {
-        val produtoEntity =
-            repository.findById(id).orElseThrow { NoSuchElementException("Produto com id=$id não encontrado") }
-        validateProdutoForUpdate(id, request)
-        val categoriaEntity = categoriaRepository.findById(request.categoriaId)
-            .orElseThrow { NoSuchElementException("Categoria com id=${request.categoriaId} não encontrada") }
-        val updated = produtoEntity.apply {
-            this.nome = request.nome.uppercase(Locale.getDefault())
-            this.descricao = request.descricao
-            this.precoVenda = request.preco
-            this.quantidadeEstoque = request.estoque
-            this.categoria = categoriaEntity
-        }
-
-        val saved = repository.saveAndFlush(updated)
-
-        if (request.insumo != null && request.quantiaInsumoPorProduto != null) {
-            vinculaProdutoAInsumo(saved, request.insumo, request.quantiaInsumoPorProduto)
-        }
-
-        return ProdutoResponse.fromEntity(saved)
-    }
-
     fun delete(id: Long) {
         if (!repository.existsById(id)) {
             throw NoSuchElementException("Produto com id=$id não encontrado")
@@ -74,16 +85,56 @@ class ProdutoService(
         repository.deleteById(id)
     }
 
-    private fun vinculaProdutoAInsumo(produto: ProdutoEntity, insumoId: Long, quantidadePorProduto: BigDecimal) {
-        val insumo = insumoRepository.findById(insumoId)
-            .orElseThrow { NoSuchElementException("insumo não encontrado") }
+    private fun calcularPrecoCusto(
+        produto: ProdutoEntity,
+        insumos: List<ProdutoInsumoRequest>
+    ): BigDecimal {
+        if (insumos.isEmpty()) {
+            return produto.custoAquisicao
+        }
 
-        val produtoInsumo = ProdutoInsumoEntity(
-            produto = produto,
-            insumo = insumo,
-            quantidade = quantidadePorProduto
-        )
-        produtoInsumoRepository.save(produtoInsumo)
+        return insumos.fold(BigDecimal.ZERO) { total, insumoReq ->
+            val insumo = insumoRepository.findById(insumoReq.insumoId)
+                .orElseThrow { NoSuchElementException("Insumo ${insumoReq.insumoId} não encontrado") }
+
+            total + (insumo.estoque?.custoUnitario?.multiply(insumoReq.quantidadePorProduto) ?: BigDecimal.ZERO)
+        }
+    }
+
+    private fun salvarInsumosDoProduto(
+        produto: ProdutoEntity,
+        insumos: List<ProdutoInsumoRequest>
+    ) {
+        if (insumos.isEmpty()) return
+
+        validarInsumos(insumos)
+
+        val entidades = insumos.map {
+            val insumo = insumoRepository.findById(it.insumoId)
+                .orElseThrow { NoSuchElementException("Insumo ${it.insumoId} não encontrado") }
+
+            ProdutoInsumoEntity(
+                produto = produto,
+                insumo = insumo,
+                quantidade = it.quantidadePorProduto
+            )
+        }
+
+        produtoInsumoRepository.saveAll(entidades)
+    }
+
+    private fun validarInsumos(insumos: List<ProdutoInsumoRequest>) {
+        val ids = insumos.map { it.insumoId }
+
+        require(ids.size == ids.distinct().size) {
+            "Não é permitido repetir o mesmo insumo no produto"
+        }
+
+        insumos.forEach {
+            require(it.quantidadePorProduto > BigDecimal.ZERO) {
+                "Quantidade do insumo deve ser maior que zero"
+            }
+        }
     }
 
     private fun validateProdutoForCreate(dto: ProdutoRequest) {

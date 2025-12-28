@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS produto (
     descricao TEXT,
     preco_venda DECIMAL(10,2) NOT NULL,
     preco_custo DECIMAL(10,2) NOT NULL,
+    custo_aquisicao DECIMAL(10,2) NOT NULL,
     categoria_id BIGINT NOT NULL,
     quantidade_estoque INT DEFAULT 0,
     ativo BOOLEAN DEFAULT TRUE,

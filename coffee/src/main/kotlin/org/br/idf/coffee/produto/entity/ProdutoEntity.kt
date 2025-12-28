@@ -22,6 +22,9 @@ class ProdutoEntity(
     @Column(name = "preco_custo", nullable = false)
     var precoCusto: BigDecimal,
 
+    @Column(name = "custo_aquisicao", nullable = false)
+    var custoAquisicao: BigDecimal,
+
     @ManyToOne
     @JoinColumn(name = "categoria_id")
     var categoria: CategoriaEntity,

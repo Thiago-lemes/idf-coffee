@@ -11,19 +11,19 @@ data class ProdutoRequest(
     val preco: BigDecimal,
     val categoriaId: Long,
     var estoque: Int = 0,
-    var precoCusto: BigDecimal,
+    var custoAquisicao: BigDecimal,
     val icone: String? = null,
-    val insumo: Long? = null,
-    val quantiaInsumoPorProduto: BigDecimal? = null
+    val insumos: List<ProdutoInsumoRequest> = emptyList()
 ){
     fun toEntity(categoria: CategoriaEntity) = ProdutoEntity(
         nome = nome.uppercase(Locale.getDefault()),
         descricao = descricao,
         precoVenda = preco,
+        custoAquisicao = custoAquisicao,
         categoria = categoria,
         quantidadeEstoque = estoque,
         ativo = true,
         icone = icone,
-        precoCusto = precoCusto
+        precoCusto = BigDecimal.ZERO
     )
 }

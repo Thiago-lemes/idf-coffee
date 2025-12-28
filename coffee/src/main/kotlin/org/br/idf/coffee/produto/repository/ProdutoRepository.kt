@@ -6,4 +6,5 @@ import java.util.*
 
 interface ProdutoRepository : JpaRepository<ProdutoEntity, Long> {
     fun findByNome(nome: String): Optional<ProdutoEntity>
+    fun existsByCategoriaId(categoriaId: Long): Boolean
 }

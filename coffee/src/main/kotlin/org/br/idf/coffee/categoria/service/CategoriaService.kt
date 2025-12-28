@@ -2,11 +2,13 @@ package org.br.idf.coffee.categoria.service
 
 import org.br.idf.coffee.categoria.dto.CategoriaDTO
 import org.br.idf.coffee.categoria.repository.CategoriaRepository
+import org.br.idf.coffee.produto.repository.ProdutoRepository
 import org.springframework.stereotype.Service
 
 @Service
 class CategoriaService(
-    private val repository: CategoriaRepository
+    private val repository: CategoriaRepository,
+    private val produtoRepository: ProdutoRepository
 ) {
     fun register(dto: CategoriaDTO): CategoriaDTO {
         findByNome(dto.nome)
@@ -25,8 +27,13 @@ class CategoriaService(
 
     fun delete(id: Long) {
         require(repository.existsById(id)) {
-            throw IllegalArgumentException("Categoria com ID $id não encontrada para exclusão.")
+            "Categoria com ID $id não encontrada para exclusão."
         }
+
+        require(!produtoRepository.existsByCategoriaId(id)) {
+            "Categoria não pode ser excluída pois possui produtos vinculados."
+        }
+
         repository.deleteById(id)
     }
 
