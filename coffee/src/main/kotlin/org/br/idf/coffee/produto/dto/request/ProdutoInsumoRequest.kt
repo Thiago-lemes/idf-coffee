@@ -1,4 +1,4 @@
-package org.br.idf.coffee.produto.dto
+package org.br.idf.coffee.produto.dto.request
 
 import java.math.BigDecimal
 

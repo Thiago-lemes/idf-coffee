@@ -2,11 +2,13 @@ package org.br.idf.coffee.produto.service
 
 import org.br.idf.coffee.categoria.repository.CategoriaRepository
 import org.br.idf.coffee.insumo.repository.InsumoRepository
-import org.br.idf.coffee.produto.dto.ProdutoInsumoRequest
-import org.br.idf.coffee.produto.dto.ProdutoRequest
-import org.br.idf.coffee.produto.dto.ProdutoResponse
+import org.br.idf.coffee.produto.dto.request.ProdutoInsumoRequest
+import org.br.idf.coffee.produto.dto.request.ProdutoRequest
+import org.br.idf.coffee.produto.dto.response.ProdutoInsumoResponse
+import org.br.idf.coffee.produto.dto.response.ProdutoResponse
 import org.br.idf.coffee.produto.entity.ProdutoEntity
 import org.br.idf.coffee.produto.entity.ProdutoInsumoEntity
+import org.br.idf.coffee.produto.mapper.MapperToProduto
 import org.br.idf.coffee.produto.repository.ProdutoInsumoRepository
 import org.br.idf.coffee.produto.repository.ProdutoRepository
 import org.springframework.stereotype.Service
@@ -20,7 +22,8 @@ class ProdutoService(
     private val repository: ProdutoRepository,
     private val categoriaRepository: CategoriaRepository,
     private val insumoRepository: InsumoRepository,
-    private val produtoInsumoRepository: ProdutoInsumoRepository
+    private val produtoInsumoRepository: ProdutoInsumoRepository,
+    private val mapper: MapperToProduto
 ) {
 
     fun registrarProduto(request: ProdutoRequest): ProdutoResponse {
@@ -29,14 +32,14 @@ class ProdutoService(
         val categoria = categoriaRepository.findById(request.categoriaId)
             .orElseThrow { NoSuchElementException("Categoria ${request.categoriaId} não encontrada") }
 
-        val produto = repository.save(request.toEntity(categoria))
+        val produto = repository.save(mapper.toEntity(categoria, request))
 
         salvarInsumosDoProduto(produto, request.insumos)
 
         produto.precoCusto = calcularPrecoCusto(produto, request.insumos)
         repository.save(produto)
 
-        return ProdutoResponse.fromEntity(produto)
+        return mapper.fromEntity(produto)
     }
 
     fun update(id: Long, request: ProdutoRequest): ProdutoResponse {
@@ -66,17 +69,38 @@ class ProdutoService(
         produto.precoCusto = calcularPrecoCusto(produto, request.insumos)
         repository.save(produto)
 
-        return ProdutoResponse.fromEntity(produto)
+        return mapper.fromEntity(produto)
     }
 
     fun findAll(): List<ProdutoResponse> =
         repository.findAll()
-            .map(ProdutoResponse::fromEntity)
+            .map(mapper::fromEntity)
 
-    fun findById(id: Long): ProdutoResponse? =
-        repository.findById(id)
-            .map(ProdutoResponse::fromEntity)
-            .orElse(null)
+    fun findById(id: Long): ProdutoResponse {
+        val produto = repository.findById(id)
+            .orElseThrow { NoSuchElementException("Produto $id não encontrado") }
+
+        val insumos = produtoInsumoRepository.findByProdutoId(produto.id)
+
+        return ProdutoResponse(
+            id = produto.id,
+            nome = produto.nome,
+            descricao = produto.descricao,
+            icone = produto.icone,
+            preco = produto.precoVenda,
+            precoCusto = produto.precoCusto,
+            estoque = produto.quantidadeEstoque,
+            categoria = produto.categoria.nome,
+            insumos = insumos.map {
+                ProdutoInsumoResponse(
+                    insumoId = it.insumo.id,
+                    nome = it.insumo.nome,
+                    quantidadePorProduto = it.quantidade
+                )
+            }
+        )
+    }
+
 
     fun delete(id: Long) {
         if (!repository.existsById(id)) {

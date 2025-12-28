@@ -4,7 +4,6 @@ import org.br.idf.coffee.estoque.component.EstoqueInsumoFactory
 import org.br.idf.coffee.insumo.dto.InsumoRequest
 import org.br.idf.coffee.insumo.dto.InsumoResponse
 import org.br.idf.coffee.insumo.repository.InsumoRepository
-import org.br.idf.coffee.ultils.ConversorUnidadeMedida
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 

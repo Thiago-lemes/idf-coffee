@@ -10,5 +10,7 @@ interface ProdutoInsumoRepository : JpaRepository<ProdutoInsumoEntity, Long> {
     @Modifying
     @Query("delete from ProdutoInsumoEntity pi where pi.produto.id = :produtoId")
     fun deleteByProdutoId(@Param("produtoId") produtoId: Long)
+
+    fun findByProdutoId(produtoId: Long): List<ProdutoInsumoEntity>
 }
 

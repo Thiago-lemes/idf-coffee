@@ -1,7 +1,7 @@
 package org.br.idf.coffee.produto.controller
 
-import org.br.idf.coffee.produto.dto.ProdutoRequest
-import org.br.idf.coffee.produto.dto.ProdutoResponse
+import org.br.idf.coffee.produto.dto.request.ProdutoRequest
+import org.br.idf.coffee.produto.dto.response.ProdutoResponse
 import org.br.idf.coffee.produto.service.ProdutoService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -28,7 +28,6 @@ class ProdutoController(
     @GetMapping("/{id}")
     fun getById(@PathVariable id: Long): ResponseEntity<ProdutoResponse> {
         val categoria = service.findById(id)
-            ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(categoria)
     }
 
