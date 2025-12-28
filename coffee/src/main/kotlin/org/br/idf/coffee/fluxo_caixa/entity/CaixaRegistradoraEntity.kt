@@ -22,6 +22,9 @@ class CaixaRegistradoraEntity(
     @Column(name = "valor_fechamento_caixa", nullable = false)
     var valorFechamentoCaixa: BigDecimal = BigDecimal.ZERO,
 
+    @Column(name = "saldo_final_conferido_pelo_voluntario", nullable = false)
+    var saldoFinalConferidoPorVoluntario: BigDecimal = BigDecimal.ZERO,
+
     @Column(name = "valor_inicial", nullable = false)
     var valorInicial: BigDecimal = BigDecimal.ZERO,
 

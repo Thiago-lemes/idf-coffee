@@ -98,6 +98,17 @@
             <version>2.3.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+            <version>5.28.0</version>
+        </dependency>
+
+        <!-- Spring Boot starter for RabbitMQ (provides RabbitTemplate and autoconfig) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

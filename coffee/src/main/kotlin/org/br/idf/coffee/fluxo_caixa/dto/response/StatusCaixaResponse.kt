@@ -5,10 +5,11 @@ import java.math.BigDecimal
 
 data class StatusCaixaResponse(
     val valorDinheiro: BigDecimal,
+    val valorTotalEmDinheiroNoCaixa: BigDecimal,
     val debito: BigDecimal,
     val credito: BigDecimal,
     val pix: BigDecimal,
-    val valorTotal: BigDecimal,
+    val valorTotalVendas: BigDecimal,
     val valorInicial: BigDecimal,
     val sangria: BigDecimal,
     val caixaOpen: Boolean,
@@ -24,13 +25,14 @@ data class StatusCaixaResponse(
             return StatusCaixaResponse(
                 valorDinheiro = caixa.totalDinheiro,
                 debito = caixa.totalDebito,
-                valorTotal = totalVendas,
+                valorTotalVendas = totalVendas,
                 valorInicial = caixa.valorInicial,
                 sangria = caixa.sangria,
                 caixaOpen = caixa.caixaAberto,
                 ultimasTransacoes = ultimas,
                 credito = caixa.totalCredito,
-                pix = caixa.totalPix
+                valorTotalEmDinheiroNoCaixa = totalDinheiroNoCaixa,
+                pix = caixa.totalPix,
             )
         }
     }

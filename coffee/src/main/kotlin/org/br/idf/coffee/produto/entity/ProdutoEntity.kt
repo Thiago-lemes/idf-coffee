@@ -16,8 +16,14 @@ class ProdutoEntity(
     @Column(name = "descricao")
     var descricao: String? = null,
 
-    @Column(name = "preco", nullable = false)
-    var preco: BigDecimal,
+    @Column(name = "preco_venda", nullable = false)
+    var precoVenda: BigDecimal,
+
+    @Column(name = "preco_custo", nullable = false)
+    var precoCusto: BigDecimal,
+
+    @Column(name = "custo_aquisicao", nullable = false)
+    var custoAquisicao: BigDecimal,
 
     @ManyToOne
     @JoinColumn(name = "categoria_id")
@@ -28,4 +34,7 @@ class ProdutoEntity(
 
     @Column(name = "ativo")
     var ativo: Boolean = true,
+
+    @Column(name = "icone")
+    var icone: String? = null,
 )

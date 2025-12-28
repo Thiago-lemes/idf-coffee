@@ -31,16 +31,13 @@ class CalcValoresCaixa {
         return total
     }
 
-    fun calculaTotalDinhieroNoCaixa(
+    fun calculaSaldoDinheiroCaixa(
         valorInicial: BigDecimal,
-        totalDinheiro: BigDecimal,
-        sangria: BigDecimal
+        totalVendasDinheiro: BigDecimal,
+        totalSangrias: BigDecimal
     ): BigDecimal {
-        if (totalDinheiro > 0.0.toBigDecimal()) {
-            return valorInicial
-                .add(totalDinheiro)
-                .subtract(sangria)
-        }
-        return totalDinheiro
+        return valorInicial
+            .add(totalVendasDinheiro)
+            .subtract(totalSangrias)
     }
 }

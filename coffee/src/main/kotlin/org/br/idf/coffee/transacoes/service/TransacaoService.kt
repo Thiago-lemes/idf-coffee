@@ -1,6 +1,7 @@
 package org.br.idf.coffee.transacoes.service
 
 import jakarta.transaction.Transactional
+import org.br.idf.coffee.fluxo_caixa.entity.CaixaRegistradoraEntity
 import org.br.idf.coffee.fluxo_caixa.repository.CaixaRegistradoraRepository
 import org.br.idf.coffee.produto.entity.ProdutoEntity
 import org.br.idf.coffee.produto.repository.ProdutoRepository
@@ -18,7 +19,7 @@ import java.math.BigDecimal
 class TransacaoService(
     private val transacaoRepository: TransacaoRepository,
     private val produtoRepository: ProdutoRepository,
-    private val fluxoCaixaRepository: CaixaRegistradoraRepository
+    private val caixaRegistradoraRepository: CaixaRegistradoraRepository
 ) {
 
     @Transactional
@@ -28,10 +29,12 @@ class TransacaoService(
         val produtos = carregarProdutos(dto)
         val itens = montarItens(dto, produtos)
         val valorTotal = calcularValorTotal(itens)
+        val caixaEntity = caixaRegistradoraRepository.findById(idFluxoCaixa).orElseThrow()
 
         val transacao = TransacaoEntity(
             valorTotal = valorTotal,
-            formaPagamento = dto.paymentMethod
+            formaPagamento = dto.paymentMethod,
+            caixa = caixaEntity
         )
 
         itens.forEach { it.transacao = transacao }
@@ -40,15 +43,22 @@ class TransacaoService(
         persistirEstoque(produtos.values.toList())
 
         val transcaoFinal = transacaoRepository.save(transacao)
-        atualizaFluxoCaixa(idFluxoCaixa, transcaoFinal)
+        atualizaFluxoCaixa(caixaEntity, transcaoFinal)
         return transcaoFinal
     }
 
-
-    fun buscarUltimasTransacoes(limit: Int = 3): List<TransacaoEntity> {
+    fun buscarUltimasTransacoes(caixaId: Long, limit: Int = 5): List<TransacaoEntity> {
         require(limit > 0) { "Limit deve ser maior que zero." }
-        val pageRequest = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "dataVenda"))
-        return transacaoRepository.findAll(pageRequest).content
+
+        val pageable = PageRequest.of(
+            0,
+            limit,
+            Sort.by(Sort.Direction.DESC, "dataVenda")
+        )
+
+        return transacaoRepository
+            .findAllByCaixaId(caixaId, pageable)
+            .content
     }
 
     private fun carregarProdutos(dto: TransacaoRquest): Map<Long, ProdutoEntity> {
@@ -62,12 +72,11 @@ class TransacaoService(
 
         val produtos = produtoRepository.findAllById(ids).toList()
         val produtosMap = produtos.associateBy { it.id }
-
         val missingIds = ids.filterNot(produtosMap::containsKey)
+
         require(missingIds.isEmpty()) {
             "Produtos não encontrados: ${missingIds.joinToString(", ")}"
         }
-
         return produtosMap
     }
 
@@ -87,7 +96,7 @@ class TransacaoService(
 
         produto.quantidadeEstoque -= quantidade
 
-        val valorUnit = produto.preco
+        val valorUnit = produto.precoVenda
         val valorTot = valorUnit.multiply(BigDecimal.valueOf(quantidade.toLong()))
 
         TransacaoItemEntity(
@@ -108,16 +117,12 @@ class TransacaoService(
     }
 
     @Transactional
-    private fun atualizaFluxoCaixa(id: Long, transacao: TransacaoEntity) {
-        val caixa = fluxoCaixaRepository.findById(id).orElseThrow()
+    private fun atualizaFluxoCaixa(caixa :  CaixaRegistradoraEntity, transacao: TransacaoEntity) {
 
-        // Sempre confiar no somatório item a item
         val totalTransacao = transacao.itens.sumOf { it.valorTotal }
 
-        // Total geral do culto
         caixa.valorFinalCulto = caixa.valorFinalCulto.add(totalTransacao)
 
-        // Soma por forma de pagamento (toda transação tem apenas um tipo)
         when (transacao.formaPagamento) {
             FormaDePagamentoEnum.DINHEIRO ->
                 caixa.totalDinheiro = caixa.totalDinheiro.add(totalTransacao)
@@ -131,6 +136,6 @@ class TransacaoService(
             FormaDePagamentoEnum.PIX ->
                 caixa.totalPix = caixa.totalPix.add(totalTransacao)
         }
-        fluxoCaixaRepository.saveAndFlush(caixa)
+        caixaRegistradoraRepository.saveAndFlush(caixa)
     }
 }
