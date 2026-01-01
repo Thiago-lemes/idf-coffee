@@ -8,18 +8,15 @@ import org.br.idf.coffee.fluxo_caixa.dto.response.OpenCaixaResponse
 import org.br.idf.coffee.fluxo_caixa.dto.response.StatusCaixaResponse
 import org.br.idf.coffee.fluxo_caixa.dto.response.TransacaoResumoDto
 import org.br.idf.coffee.fluxo_caixa.repository.CaixaRegistradoraRepository
-import org.br.idf.coffee.rabbit.RabbitPublisher
 import org.br.idf.coffee.transacoes.service.TransacaoService
 import org.br.idf.coffee.ultils.CalcValoresCaixa
 import org.springframework.stereotype.Service
-import java.time.LocalDateTime
 
 @Service
 class CaixaRegistradoraService(
     private val repository: CaixaRegistradoraRepository,
     private val calcValoresCaixa: CalcValoresCaixa,
     private val transacaoService: TransacaoService,
-    private val rabbitPublisher: RabbitPublisher
 ) {
 
     fun getStatusCaixa(id: Long): StatusCaixaResponse {
@@ -66,20 +63,6 @@ class CaixaRegistradoraService(
             fluxoCaixaEntity.valorFinalCulto = totalEntradasNoCulto
             fluxoCaixaEntity.valorFechamentoCaixa = totalFechamento
             val saved = repository.saveAndFlush(fluxoCaixaEntity)
-
-            // publish event to rabbitmq
-            try {
-                val event = org.br.idf.coffee.rabbit.FechamentoCaixaEvent(
-                    caixaId = saved.id ?: throw IllegalStateException("Caixa sem id"),
-                    valorFechamento = saved.valorFechamentoCaixa,
-                    valorFinalCulto = saved.valorFinalCulto,
-                    dataFechamento = LocalDateTime.now()
-                )
-//                rabbitPublisher.publishFechamento(event)
-            } catch (ex: Exception) {
-                // Log the exception but don't fail the operation
-                ex.printStackTrace()
-            }
 
             return FechamentoCaixaResponse.fromEntity(saved, totalFechamento)
         }

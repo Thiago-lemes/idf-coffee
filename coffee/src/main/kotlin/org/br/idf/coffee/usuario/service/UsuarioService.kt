@@ -5,7 +5,7 @@ import org.br.idf.coffee.usuario.dto.UsuarioResponseDTO
 import org.br.idf.coffee.usuario.repository.UsuarioRepository
 import org.br.idf.coffee.usuario.entity.UsuarioDetails
 import org.br.idf.coffee.usuario.entity.UsuarioEntity
-import org.br.idf.coffee.security.PasswordHashService
+import org.br.idf.coffee.auth.service.PasswordHashService
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException

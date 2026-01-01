@@ -1,6 +1,7 @@
 package org.br.idf.coffee.categoria.service
 
 import org.br.idf.coffee.categoria.dto.CategoriaDTO
+import org.br.idf.coffee.categoria.mapper.MapperToCategoria
 import org.br.idf.coffee.categoria.repository.CategoriaRepository
 import org.br.idf.coffee.produto.repository.ProdutoRepository
 import org.springframework.stereotype.Service
@@ -8,22 +9,23 @@ import org.springframework.stereotype.Service
 @Service
 class CategoriaService(
     private val repository: CategoriaRepository,
-    private val produtoRepository: ProdutoRepository
+    private val produtoRepository: ProdutoRepository,
+    private val mapper: MapperToCategoria
 ) {
     fun register(dto: CategoriaDTO): CategoriaDTO {
         findByNome(dto.nome)
-        return repository.save(dto.toEntity())
-            .let(CategoriaDTO::fromEntity)
+        return repository.save(mapper.toEntity(dto))
+            .let(mapper::fromEntity)
     }
 
     fun findById(id: Long): CategoriaDTO? =
         repository.findById(id)
-            .map(CategoriaDTO::fromEntity)
+            .map(mapper::fromEntity)
             .orElse(null)
 
     fun findAll(): List<CategoriaDTO> =
         repository.findAll()
-            .map(CategoriaDTO::fromEntity)
+            .map(mapper::fromEntity)
 
     fun delete(id: Long) {
         require(repository.existsById(id)) {
@@ -42,7 +44,7 @@ class CategoriaService(
         findByNome(dto.nome)
         categoria.nome = dto.nome
         val savedCategoria = repository.saveAndFlush(categoria)
-        return CategoriaDTO.fromEntity(savedCategoria)
+        return mapper.fromEntity(savedCategoria)
     }
 
     private fun findByNome(nome: String) {

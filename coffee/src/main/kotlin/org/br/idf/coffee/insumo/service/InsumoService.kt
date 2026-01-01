@@ -3,6 +3,7 @@ package org.br.idf.coffee.insumo.service
 import org.br.idf.coffee.estoque.component.EstoqueInsumoFactory
 import org.br.idf.coffee.insumo.dto.InsumoRequest
 import org.br.idf.coffee.insumo.dto.InsumoResponse
+import org.br.idf.coffee.insumo.mapper.MapperToInsumo
 import org.br.idf.coffee.insumo.repository.InsumoRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -10,14 +11,15 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class InsumoService(
     private val insumoRepository: InsumoRepository,
-    private val estoqueFactory: EstoqueInsumoFactory
+    private val estoqueFactory: EstoqueInsumoFactory,
+    private val mapper: MapperToInsumo
 
 ) {
 
     @Transactional
     fun registraInsumo(request: InsumoRequest): InsumoResponse {
 
-        val insumo = request.toEntity()
+        val insumo = mapper.toEntity(request)
 
         insumoRepository.save(insumo)
 
@@ -30,10 +32,10 @@ class InsumoService(
 
         insumo.estoque = estoque
 
-        return InsumoResponse.fromEntity(insumo)
+        return mapper.fromEntity(insumo)
     }
 
     fun findAll(): List<InsumoResponse> =
         insumoRepository.findAll()
-            .map(InsumoResponse::fromEntity)
+            .map(mapper::fromEntity)
 }

@@ -1,4 +1,4 @@
-package org.br.idf.coffee.security
+package org.br.idf.coffee.auth.service
 
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -7,7 +7,10 @@ import org.springframework.stereotype.Service
 class BcryptPasswordHashService(
     private val passwordEncoder: PasswordEncoder
 ) : PasswordHashService {
-    override fun hash(raw: String): String = passwordEncoder.encode(raw)
 
-    override fun matches(raw: String, hashed: String): Boolean = passwordEncoder.matches(raw, hashed)
+    override fun hash(raw: String): String =
+        passwordEncoder.encode(raw)
+
+    override fun matches(raw: String, hashed: String): Boolean =
+        passwordEncoder.matches(raw, hashed)
 }
