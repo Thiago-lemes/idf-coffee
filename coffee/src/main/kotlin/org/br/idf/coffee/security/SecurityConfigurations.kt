@@ -3,6 +3,7 @@ package org.br.idf.coffee.security
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
+import org.springframework.http.HttpMethod
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -19,28 +20,18 @@ class SecurityConfigurations(
     private val securityFilter: SecurityFilter,
     private val environment: Environment
 ) {
-
-    private fun isDevOrTestProfile(): Boolean {
-        val active = environment.activeProfiles
-        return active.any { it.equals("dev", ignoreCase = true) || it.equals("test", ignoreCase = true) }
-    }
-
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
-        val source = UrlBasedCorsConfigurationSource()
-        val config = CorsConfiguration().apply {
-            allowedOriginPatterns = listOf("http://localhost:3000")
+
+        val corsConfig = CorsConfiguration().apply {
+            allowedOrigins = listOf("http://localhost:3000")
+            allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+            allowedHeaders = listOf("Authorization", "Content-Type")
             allowCredentials = true
-            allowedMethods = listOf("POST", "GET", "PUT", "DELETE", "OPTIONS")
-            allowedHeaders = listOf("*", "Authorization", "Content-Type", "Access-Control-Allow-Origin")
-            exposedHeaders = listOf("Access-Control-Allow-Origin")
         }
-        source.registerCorsConfiguration("/**", config)
 
-        val isDev = isDevOrTestProfile()
-
-        if (isDev) {
-            http.headers { headers -> headers.frameOptions { it.disable() } }
+        val source = UrlBasedCorsConfigurationSource().apply {
+            registerCorsConfiguration("/**", corsConfig)
         }
 
         return http
@@ -48,14 +39,15 @@ class SecurityConfigurations(
             .csrf { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests {
+                it.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 it.requestMatchers("/auth/**").permitAll()
-                it.requestMatchers("/insumos/**").permitAll()
                 it.requestMatchers("/usuario/register").permitAll()
                 it.anyRequest().authenticated()
             }
             .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter::class.java)
             .build()
     }
+
 
     @Bean
     fun authenticationManager(config: AuthenticationConfiguration): AuthenticationManager =
