@@ -1,0 +1,29 @@
+# Ignore target output and IDE files, but do NOT ignore project pom.xml or src when using subdirectory builds
+target/
+# allow packaged JARs in target to be included if explicitly needed
+!target/*.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git artifacts
+.git
+
+# Logs and tmp
+*.log
+logs/
+tmp/
+
+# Do NOT ignore the project directory or pom.xml/src when using APP_DIR
+# (for example, if APP_DIR=coffee, ensure coffee/pom.xml and coffee/src/** are included)
+
+# Environment files
+.env
+.env.*
+

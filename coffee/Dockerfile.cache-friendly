@@ -1,5 +1,5 @@
 # Cache-friendly Dockerfile for Maven projects located in a subdirectory
-# Usage: docker build --build-arg APP_DIR=coffee -f Dockerfile -t myapp .
+# Usage: docker build --build-arg APP_DIR=coffee -f Dockerfile.cache-friendly -t myapp .
 
 FROM maven:3.9-eclipse-temurin-21 AS build
 
