@@ -1,4 +1,4 @@
-package org.br.idf.coffee.security
+package org.br.idf.coffee.auth.service
 
 interface PasswordHashService {
     fun hash(raw: String): String

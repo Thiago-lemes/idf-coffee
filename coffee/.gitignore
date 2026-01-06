@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Docker & Secrets ###
+.env.prod
+.env.local
+*.env
+!.env.prod.example
+
