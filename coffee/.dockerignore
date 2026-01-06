@@ -1,8 +1,10 @@
-target
-.git
-.idea
-.vscode
-*.iml
-.DS_Store
-*.log
+# docker ignore for the Maven project
+# keep it minimal and saved as UTF-8 without BOM
 
+target/
+*.log
+.DS_Store
+.idea/
+.vscode/
+*.iml
+.env
