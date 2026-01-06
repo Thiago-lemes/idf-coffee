@@ -1,0 +1,8 @@
+spring:
+  profiles:
+    active: dev-mysql
+
+# Common logging and jpa defaults (can be overridden per-profile)
+logging:
+  level:
+    root: INFO
