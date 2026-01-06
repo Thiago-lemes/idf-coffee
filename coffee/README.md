@@ -153,3 +153,8 @@ Boas práticas e pontos de atenção
 - Centralize configurações sensíveis em variáveis de ambiente (não commit em VCS).
 - Migrations do Flyway são a fonte de verdade para o esquema do BD — atualize sempre que o modelo mudar.
 - Use perfis do Spring (`dev-mysql`, `prod`, `test` etc.) para separação de configurações.
+
+Próximos passos úteis (opcionais)
+- Criei o arquivo `.env.example` na raiz do projeto com as variáveis listadas nesta documentação.
+- Adicionar `docker-compose.yml` para desenvolvimento com MySQL e RabbitMQ (não incluído neste README por solicitação).
+- Adicionar instruções de CI (ex.: GitHub Actions) para build/test.
