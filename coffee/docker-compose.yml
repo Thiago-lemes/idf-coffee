@@ -1,0 +1,54 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: coffee-mysql-dev
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-coffee}
+      MYSQL_USER: ${MYSQL_USER:-coffee_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-coffee_pass}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -p$${MYSQL_ROOT_PASSWORD:-root} || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - coffee-network
+
+  app:
+    build: .
+    container_name: coffee-app-dev
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-coffee}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-coffee_user}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-coffee_pass}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      JWT_SECRET: ${JWT_SECRET:-sua-chave-secreta-desenvolvimento}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      SERVER_PORT: 8080
+    restart: unless-stopped
+    networks:
+      - coffee-network
+    volumes:
+      - ./src:/app/src
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  coffee-network:
+    driver: bridge
+
