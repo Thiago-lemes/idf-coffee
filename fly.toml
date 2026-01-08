@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for idf-coffee on 2026-01-06T18:25:27Z
+# fly.toml app configuration file generated for 2coffee on 2026-01-08T18:09:58Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'idf-coffee'
+app = '2coffee'
 primary_region = 'gru'
 
 [build]
