@@ -32,9 +32,45 @@ build/
 ### VS Code ###
 .vscode/
 
-### Docker & Secrets ###
-.env.prod
+### Environment & Secrets ###
+# NUNCA commitar arquivos .env ou .env.* com valores reais
+.env
 .env.local
-*.env
+.env.*.local
+.env.prod
+.env.staging
+
+# Permitir apenas templates de exemplo
+!.env.example
 !.env.prod.example
+
+### Certificados e Keystores ###
+*.p12
+*.pfx
+*.pem
+*.key
+*.crt
+*.cer
+keystore*
+!src/main/resources/keystore.p12.example
+
+### Docker ###
+docker-compose.override.yml
+
+### Logs ###
+*.log
+logs/
+
+### Temporários ###
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+### IDE Lock files ###
+*.lock
+
+### Kubernetes ###
+k8s-secrets/
+*.yaml.encrypted
 
