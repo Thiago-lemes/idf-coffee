@@ -1,8 +1,8 @@
 spring:
   profiles:
-    active: dev-mysql
+    active: ${SPRING_PROFILES_ACTIVE:dev-mysql}
 
 # Common logging and jpa defaults (can be overridden per-profile)
 logging:
   level:
-    root: INFO
+    root: ${LOG_LEVEL:INFO}

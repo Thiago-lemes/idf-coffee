@@ -1,0 +1,115 @@
+# ============================================
+# Docker Compose for PRODUCTION deployment
+# ============================================
+# This is a reference template for production deployments
+# For actual production, consider using Kubernetes, Fly.io, or Railway
+# instead of raw docker-compose
+# ============================================
+
+version: '3.9'
+
+services:
+  # Spring Boot Coffee Application (Production)
+  coffee-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: coffee_app_prod
+    environment:
+      # Spring profiles
+      SPRING_PROFILES_ACTIVE: prod
+      SERVER_PORT: 8080
+
+      # Database configuration - use managed service URLs
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+
+      # RabbitMQ configuration - use managed service
+      RABBIT_HOST: ${RABBIT_HOST}
+      RABBIT_PORT: ${RABBIT_PORT:-5671}
+      RABBIT_USER: ${RABBIT_USER}
+      RABBIT_PASSWORD: ${RABBIT_PASSWORD}
+      RABBIT_VHOST: ${RABBIT_VHOST:-/}
+
+      # Security - MUST come from secrets manager!
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-3600000}
+
+      # Logging
+      LOG_LEVEL: WARN
+
+      # Java memory tuning
+      JAVA_OPTS: -XX:+UseZGC -XX:MaxRAMPercentage=75.0 -XX:+PerfDisableSharedMem
+
+    ports:
+      - "8080:8080"
+
+    networks:
+      - coffee_network
+
+    # Restart policy for production
+    restart: always
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  coffee_network:
+    driver: bridge
+
+# ============================================
+# PRODUCTION DEPLOYMENT GUIDELINES
+# ============================================
+#
+# 1. DATABASE: Use managed MySQL service (AWS RDS, Google Cloud SQL, Azure)
+#    - Set SPRING_DATASOURCE_URL with SSL enabled
+#    - Enable automated backups and monitoring
+#
+# 2. RABBITMQ: Use managed message broker (AWS MQ, CloudAMQP, Azure)
+#    - Use TLS/SSL for connections (port 5671)
+#
+# 3. SECRETS: Store all sensitive data in secrets manager
+#    - AWS Secrets Manager
+#    - Azure Key Vault
+#    - Google Cloud Secret Manager
+#    - Hashicorp Vault
+#    - Fly.io/Railway/Heroku built-in secrets
+#
+# 4. DEPLOYMENT PLATFORMS RECOMMENDED:
+#    - Railway.app (simple, affordable, auto-deploy from Git)
+#    - Fly.io (global distribution, generous free tier)
+#    - AWS ECS/Fargate (managed containers)
+#    - Google Cloud Run (serverless containers)
+#    - Azure Container Instances
+#
+# 5. MONITORING & LOGGING:
+#    - Enable Spring Boot Actuator endpoints (/actuator/health, /actuator/metrics)
+#    - Configure centralized logging (ELK, Datadog, New Relic, Splunk)
+#    - Set up alerts for errors and performance issues
+#
+# 6. SSL/HTTPS:
+#    - Use a reverse proxy (Nginx, Traefik) for SSL termination
+#    - Or rely on platform's built-in SSL (Fly.io, Railway, etc.)
+#
+# 7. SCALING:
+#    - Use platform's auto-scaling features
+#    - Monitor CPU and memory usage
+#    - Set up appropriate resource limits
+#
+

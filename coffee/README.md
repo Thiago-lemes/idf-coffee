@@ -153,3 +153,294 @@ Boas práticas e pontos de atenção
 - Centralize configurações sensíveis em variáveis de ambiente (não commit em VCS).
 - Migrations do Flyway são a fonte de verdade para o esquema do BD — atualize sempre que o modelo mudar.
 - Use perfis do Spring (`dev-mysql`, `prod`, `test` etc.) para separação de configurações.
+
+---
+
+## Docker & Containerização
+
+Este projeto está totalmente containerizado e pronto para deployment com Docker.
+
+### Arquivos Docker fornecidos
+
+| Arquivo | Propósito |
+|---------|-----------|
+| `Dockerfile` | Multi-stage build: Maven para compilar, eclipse-temurin:21-jre-alpine para runtime |
+| `docker-compose.yml` | Ambiente de **desenvolvimento**: app + MySQL + RabbitMQ com healthchecks |
+| `docker-compose.prod.yml` | Referência para **produção** com managed services externos |
+| `.dockerignore` | Exclui arquivos desnecessários (node_modules, .git, test files, etc.) |
+| `application-docker.yml` | Profile Spring Boot para ambiente containerizado |
+| `.env.docker` | Variáveis de ambiente padrão para dev (valores seguros) |
+
+### Quick Start com Docker Compose (Desenvolvimento)
+
+#### Opção 1: Usando docker-compose (recomendado)
+
+**Pré-requisitos:**
+- Docker e Docker Compose instalados
+- Windows: PowerShell recomendado
+
+**Passos:**
+
+1. **Navegar até a pasta do projeto:**
+```powershell
+cd coffee
+```
+
+2. **Iniciar os serviços:**
+```powershell
+# Linux/Mac
+docker compose --env-file .env.docker up -d
+
+# Windows PowerShell
+docker compose --env-file .env.docker up -d
+```
+
+3. **Acompanhar os logs:**
+```powershell
+docker compose logs -f coffee-app
+```
+
+4. **Parar os serviços:**
+```powershell
+docker compose down
+```
+
+**Acesso aos serviços:**
+- **Aplicação:** http://localhost:8080
+- **Swagger UI:** http://localhost:8080/swagger-ui.html
+- **Health Check:** http://localhost:8080/actuator/health
+- **MySQL:** localhost:3306 (user: `coffee_user`, password: `coffeepwd123`)
+- **RabbitMQ Management:** http://localhost:15672 (user: `guest`, password: `guest`)
+
+#### Opção 2: Usando scripts helper
+
+**Windows:**
+```powershell
+.\docker-helper.bat start
+.\docker-helper.bat logs-app
+.\docker-helper.bat stop
+```
+
+**Linux/Mac:**
+```bash
+bash docker-helper.sh start
+bash docker-helper.sh logs-app
+bash docker-helper.sh stop
+```
+
+**Comandos disponíveis:**
+```
+start       - Iniciar todos os serviços
+stop        - Parar todos os serviços
+restart     - Reiniciar serviços
+logs        - Ver todos os logs
+logs-app    - Ver logs da aplicação
+build       - Compilar imagem Docker
+clean       - Remover containers e volumes
+health      - Verificar saúde dos serviços
+help        - Mostrar ajuda
+```
+
+### Build da Docker Image
+
+#### Build local (desenvolvimento)
+```powershell
+docker compose build coffee-app
+```
+
+#### Build com tag para produção
+```powershell
+docker build -t coffee:latest -t coffee:prod .
+```
+
+#### Push para registry (ex: Docker Hub, ECR)
+```powershell
+$env:REGISTRY_URL = "your-registry.com"
+docker tag coffee:latest ${env:REGISTRY_URL}/coffee:latest
+docker push ${env:REGISTRY_URL}/coffee:latest
+```
+
+### Variáveis de Ambiente
+
+#### Desenvolvimento (.env.docker)
+```dotenv
+# Spring
+SPRING_PROFILES_ACTIVE=docker
+SERVER_PORT=8080
+
+# MySQL
+MYSQL_HOST=mysql
+MYSQL_DATABASE=coffee
+MYSQL_USER=coffee_user
+MYSQL_PASSWORD=coffeepwd123
+
+# RabbitMQ
+RABBIT_HOST=rabbitmq
+RABBIT_USER=guest
+RABBIT_PASSWORD=guest
+
+# Security (MUDAR EM PRODUÇÃO!)
+JWT_SECRET=your-development-secret-key-here-min-32-chars!
+JWT_EXPIRATION_MS=86400000
+```
+
+#### Produção
+Para produção, **NUNCA** use `.env` files. Use:
+- **Railway.app:** Secrets integrados no dashboard
+- **Fly.io:** `flyctl secrets set`
+- **AWS:** AWS Secrets Manager ou Systems Manager Parameter Store
+- **Google Cloud:** Cloud Secret Manager
+- **Azure:** Azure Key Vault
+- **Heroku:** Config Vars
+
+**Exemplo Railway:**
+```bash
+# Definir secrets via CLI
+railway variables set JWT_SECRET="seu-secret-seguro"
+railway variables set SPRING_DATASOURCE_PASSWORD="db-password-segura"
+```
+
+**Exemplo Fly.io:**
+```bash
+# Definir secrets
+flyctl secrets set JWT_SECRET="seu-secret-seguro"
+flyctl secrets set SPRING_DATASOURCE_PASSWORD="db-password-segura"
+```
+
+### Segurança em Docker
+
+#### Implementações incluídas no Dockerfile:
+✅ **Non-root user:** Aplicação roda como `spring` (UID 1000), não como `root`
+✅ **Imagem minimal:** Usa `eclipse-temurin:21-jre-alpine` (~180MB vs ~500MB)
+✅ **Multi-stage build:** Apenas runtime necessário na imagem final (sem Maven, compilador)
+✅ **dumb-init:** Proper signal handling para graceful shutdown
+✅ **Healthchecks:** Docker Compose monitora saúde dos serviços
+✅ **Network isolation:** Services se comunicam via docker network privada
+
+#### Boas práticas adicionais:
+- ✅ Variáveis sensíveis via secrets manager (nunca em código)
+- ✅ HTTPS/TLS termination via reverse proxy (Nginx, Cloudflare, etc.)
+- ✅ Rate limiting e DDoS protection na edge
+- ✅ Scan de vulnerabilidades: `docker scout cves`
+- ✅ Atualizações regulares de base images
+
+### Troubleshooting
+
+#### Erro: "port 3306 already in use"
+```powershell
+# Encontrar processo usando a porta
+Get-NetTCPConnection -LocalPort 3306
+
+# Ou parar containers existentes
+docker compose down
+docker ps -a  # verificar se há outros containers rodando
+```
+
+#### Erro: "failed to solve: failed to calculate checksum of ref"
+```powershell
+# Limpar build cache
+docker builder prune
+
+# Reconstruir sem cache
+docker compose build --no-cache coffee-app
+```
+
+#### Logs não aparecem
+```powershell
+# Verificar status dos containers
+docker compose ps
+
+# Ver logs detalhados
+docker compose logs --tail=100 coffee-app
+```
+
+#### Aplicação não conecta no MySQL
+```powershell
+# Verificar healthcheck do MySQL
+docker compose ps
+
+# Executar comando de teste no MySQL
+docker compose exec mysql mysqladmin ping -h localhost
+
+# Aumentar tempo de startup
+# (editar docker-compose.yml, aumentar retries no healthcheck)
+```
+
+### Deployment em Plataformas Gerenciadas
+
+#### Railway.app (Recomendado - mais fácil)
+
+1. **Conectar repositório Git** ao Railway
+2. **Configurar variáveis** no dashboard (Secrets)
+3. **Configurar banco de dados** (MySQL add-on)
+4. **Deploy automático** a cada push
+
+```bash
+# CLI alternativo
+railway login
+railway init
+railway variables set JWT_SECRET="seu-secret"
+railway up
+```
+
+#### Fly.io
+
+1. **Instalar Fly CLI:** https://fly.io/docs/getting-started/installing-fly/
+2. **Autenticar:** `flyctl auth login`
+3. **Criar app:** `flyctl app create coffee-app`
+4. **Configurar variáveis:** `flyctl secrets set JWT_SECRET="seu-secret"`
+5. **Fazer deploy:** `flyctl deploy`
+
+#### AWS ECS/Fargate
+
+1. Fazer push da imagem para ECR
+2. Criar task definition apontando para a imagem
+3. Configurar RDS MySQL e ElastiCache RabbitMQ (ou CloudAMQP)
+4. Criar ECS service
+
+#### Google Cloud Run
+
+```bash
+# Fazer push para Google Container Registry
+gcloud builds submit --tag gcr.io/PROJECT/coffee:latest
+
+# Deploy
+gcloud run deploy coffee --image gcr.io/PROJECT/coffee:latest \
+  --set-env-vars="SPRING_PROFILES_ACTIVE=prod"
+```
+
+### Usar Makefile (Linux/Mac)
+
+Se estiver em Linux/Mac, pode usar o Makefile incluído:
+
+```bash
+make help              # Ver todos os comandos
+make docker-up        # Iniciar services
+make docker-down      # Parar services
+make docker-logs      # Ver logs
+make docker-clean     # Limpar tudo
+make build            # Build Maven
+make test             # Rodar testes
+```
+
+### Monitoramento & Observabilidade
+
+#### Health Checks integrados:
+```bash
+# Verificar saúde dos serviços
+curl http://localhost:8080/actuator/health
+
+# Ver métricas
+curl http://localhost:8080/actuator/metrics
+
+# Detailed health info (requer autorização)
+curl http://localhost:8080/actuator/health/db
+curl http://localhost:8080/actuator/health/diskSpace
+```
+
+#### Logs centralizados (produção):
+- **Datadog:** https://www.datadoghq.com
+- **New Relic:** https://newrelic.com
+- **Elastic/ELK:** https://www.elastic.co
+- **Splunk:** https://www.splunk.com
+- **CloudWatch (AWS):** https://aws.amazon.com/cloudwatch/

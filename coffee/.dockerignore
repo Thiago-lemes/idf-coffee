@@ -1,0 +1,92 @@
+# Maven
+target/
+!target/*.jar
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle (in case someone has both)
+.gradle/
+build/
+gradle/
+gradlew
+gradlew.bat
+
+# Kotlin
+*.kt.swp
+.kotlin/
+
+# IDE files
+.idea/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+.settings/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+CHANGELOG.md
+docs/
+*.md
+
+# Test files (test dependencies downloaded, but source not needed)
+src/test/
+test/
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Package files (except JAR from target which we explicitly include above)
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Docker files (don't copy docker files into image)
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# Railway/Fly.io config
+fly.toml
+railway.json
+railway.toml
+
+# Environment files (use explicit config, not .env files in image)
+.env*
+application-local.*
+
+# Kotlin compiler
+kotlin-js-store/
+
+# Build output
+target/
+

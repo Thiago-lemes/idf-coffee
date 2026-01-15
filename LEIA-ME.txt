@@ -1,0 +1,105 @@
+=====================================
+COFFEE PDV - QUICK START GUIDE
+=====================================
+
+Você tem 3 scripts prontos para usar:
+
+1. START_DOCKER.bat
+   - Inicia todos os containers (app + MySQL + RabbitMQ)
+   - Clique 2x ou execute no terminal
+
+2. VIEW_LOGS.bat
+   - Mostra os logs dos containers
+   - Execute para ver o que está acontecendo
+
+3. STOP_DOCKER.bat
+   - Para todos os containers
+   - Execute quando quiser parar
+
+=====================================
+COMO USAR:
+=====================================
+
+1. Abra D:\workSpace\coffee
+
+2. Clique 2x em START_DOCKER.bat
+   Aguarde ~30 segundos até aparecer "Docker containers started successfully!"
+
+3. Abra seu navegador:
+   http://localhost:8080
+
+4. Você verá a aplicação Spring Boot rodando!
+
+5. Para ver os logs:
+   Clique 2x em VIEW_LOGS.bat
+
+6. Para parar:
+   Clique 2x em STOP_DOCKER.bat
+
+=====================================
+ACESSOS:
+=====================================
+
+Application:
+  http://localhost:8080
+
+Swagger UI (API Documentation):
+  http://localhost:8080/swagger-ui.html
+
+Health Check:
+  http://localhost:8080/actuator/health
+
+RabbitMQ Management UI:
+  http://localhost:15672
+  User: guest
+  Password: guest
+
+MySQL Database:
+  Host: localhost
+  Port: 3306
+  User: coffee_user
+  Password: coffeepwd123
+
+=====================================
+TROUBLESHOOTING:
+=====================================
+
+Se der erro "port already in use":
+  - Abra Task Manager
+  - Procure por "docker" ou "mysql"
+  - Encerre ou mude as portas em docker-compose.yml
+
+Se o container não inicia:
+  - Execute VIEW_LOGS.bat para ver a mensagem de erro
+  - Verifique se o arquivo .env.docker existe
+  - Tente STOP_DOCKER.bat e depois START_DOCKER.bat novamente
+
+=====================================
+PRÓXIMAS ETAPAS:
+=====================================
+
+Depois de começar com sucesso:
+
+1. Leia GUIA_RAPIDO.md para entender melhor
+2. Explore http://localhost:8080/swagger-ui.html
+3. Veja o código em src/main/kotlin/
+4. Leia ARCHITECTURE.md para entender a estrutura
+5. Faça deploy em Railway.app ou Fly.io
+
+=====================================
+DOCUMENTAÇÃO:
+=====================================
+
+Todos os guias estão em português:
+
+- GUIA_RAPIDO.md - Start here!
+- DOCKER.md - Docker completo
+- ARCHITECTURE.md - Entender o código
+- RAILWAY.md - Deploy em Railway
+- FLY.md - Deploy em Fly.io
+- README.md - Documentação geral
+
+=====================================
+
+Sucesso! ☕
+

@@ -1,0 +1,122 @@
+version: '3.9'
+
+services:
+  # MySQL Database Service
+  mysql:
+    image: mysql:8.0-alpine
+    container_name: coffee_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-coffee}
+      MYSQL_USER: ${MYSQL_USER:-coffee_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-coffeepwd123}
+      # MySQL 8.0 configuration
+      MYSQL_INITDB_SKIP_TZINFO: 1
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./src/main/resources/db/migration:/docker-entrypoint-initdb.d
+    networks:
+      - coffee_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 10
+      interval: 10s
+    restart: unless-stopped
+
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3.13-alpine
+    container_name: coffee_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBIT_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD:-guest}
+      RABBITMQ_DEFAULT_VHOST: ${RABBIT_VHOST:-/}
+    ports:
+      - "${RABBIT_PORT:-5672}:5672"      # AMQP port
+      - "15672:15672"                     # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - coffee_network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      timeout: 10s
+      retries: 10
+      interval: 10s
+    restart: unless-stopped
+
+  # Spring Boot Coffee Application
+  coffee-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: coffee_app
+    environment:
+      # Spring profiles and port
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8080
+
+      # MySQL configuration
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-coffee}
+      MYSQL_USER: ${MYSQL_USER:-coffee_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-coffeepwd123}
+
+      # RabbitMQ configuration
+      RABBIT_HOST: rabbitmq
+      RABBIT_PORT: 5672
+      RABBIT_USER: ${RABBIT_USER:-guest}
+      RABBIT_PASSWORD: ${RABBIT_PASSWORD:-guest}
+      RABBIT_VHOST: ${RABBIT_VHOST:-/}
+
+      # RabbitMQ exchanges/queues
+      RABBITMQ_EXCHANGE: ${RABBITMQ_EXCHANGE:-coffee.exchange}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE:-fechamento.caixa.queue}
+      RABBITMQ_ROUTING_KEY: ${RABBITMQ_ROUTING_KEY:-fechamento.caixa}
+
+      # Security - JWT (change in production!)
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+
+      # Database pool tuning for Docker
+      DB_POOL_SIZE: 10
+      DB_POOL_MIN_IDLE: 5
+
+      # Java options
+      JAVA_OPTS: -XX:+UseZGC -XX:MaxRAMPercentage=75.0
+
+    ports:
+      - "${APP_PORT:-8080}:8080"
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+    networks:
+      - coffee_network
+
+    restart: unless-stopped
+
+    # For development: enable interactive mode and logs
+    stdin_open: true
+    tty: true
+
+networks:
+  coffee_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+

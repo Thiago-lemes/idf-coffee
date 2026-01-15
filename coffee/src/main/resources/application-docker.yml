@@ -1,0 +1,88 @@
+spring:
+  # Docker environment - use service names from docker-compose as hostnames
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:mysql}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:coffee}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:rootpassword}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      minimum-idle: ${DB_POOL_MIN_IDLE:5}
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    show-sql: false
+
+  # Flyway migrations
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+  # RabbitMQ configuration for Docker
+  rabbitmq:
+    host: ${RABBIT_HOST:rabbitmq}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USER:guest}
+    password: ${RABBIT_PASSWORD:guest}
+    virtual-host: ${RABBIT_VHOST:/}
+    connection-timeout: 10000
+
+# RabbitMQ exchanges and queues
+rabbitmq:
+  exchange: ${RABBITMQ_EXCHANGE:coffee.exchange}
+  queue: ${RABBITMQ_QUEUE:fechamento.caixa.queue}
+  routing-key: ${RABBITMQ_ROUTING_KEY:fechamento.caixa}
+
+# Server configuration
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /
+  error:
+    include-message: always
+
+# Logging
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}
+    org.springframework.boot: INFO
+    org.springframework.web: INFO
+    org.hibernate.SQL: WARN
+
+# Security - JWT
+security:
+  jwt:
+    secret: ${JWT_SECRET:your-secret-key-change-in-production}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+# Management endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      simple:
+        enabled: true
+
+# OpenAPI/Swagger
+springdoc:
+  api-docs:
+    path: /api/docs
+  swagger-ui:
+    path: /api/swagger-ui.html
+    enabled: true
+
