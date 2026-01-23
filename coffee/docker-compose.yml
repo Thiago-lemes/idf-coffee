@@ -3,20 +3,20 @@ version: '3.9'
 services:
   # MySQL Database Service
   mysql:
-    image: mysql:8.0-alpine
+    image: mysql:8.0
     container_name: coffee_mysql
+    command: --default-authentication-plugin=mysql_native_password
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-rootpassword}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-coffee}
-      MYSQL_USER: ${MYSQL_USER:-coffee_user}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-coffeepwd123}
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: coffee
+      MYSQL_USER: coffee_user
+      MYSQL_PASSWORD: coffeepwd123
       # MySQL 8.0 configuration
       MYSQL_INITDB_SKIP_TZINFO: 1
     ports:
-      - "${MYSQL_PORT:-3306}:3306"
+      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./src/main/resources/db/migration:/docker-entrypoint-initdb.d
     networks:
       - coffee_network
     healthcheck:
@@ -58,13 +58,16 @@ services:
       # Spring profiles and port
       SPRING_PROFILES_ACTIVE: docker
       SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/coffee
+      SPRING_DATASOURCE_USERNAME: coffee_user
+      SPRING_DATASOURCE_PASSWORD: coffeepwd123
 
       # MySQL configuration
       MYSQL_HOST: mysql
       MYSQL_PORT: 3306
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-coffee}
-      MYSQL_USER: ${MYSQL_USER:-coffee_user}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-coffeepwd123}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
 
       # RabbitMQ configuration
       RABBIT_HOST: rabbitmq
